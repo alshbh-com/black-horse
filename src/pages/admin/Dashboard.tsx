@@ -17,7 +17,8 @@ import {
   LogOut,
   Palette,
   Building2,
-  ScanBarcode
+  ScanBarcode,
+  Plug
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SearchBar from "@/components/admin/SearchBar";
@@ -46,6 +47,7 @@ const adminSections = [
   { title: "المظهر", description: "الألوان والقوالب واسم المنصة", icon: Palette, path: "/admin/appearance", color: "text-fuchsia-500", permission: "user_management" },
   { title: "المكاتب", description: "إدارة المكاتب والفروع", icon: Building2, path: "/admin/offices", color: "text-sky-500", permission: "user_management" },
   { title: "قراءة الباركود", description: "اسكان الأوردرات بالمسدس وإجراءات جماعية", icon: ScanBarcode, path: "/admin/barcode-scanner", color: "text-rose-500", permission: "barcode_scanner" },
+  { title: "تكامل EasyOrders", description: "ربط API لجلب الطلبات تلقائياً", icon: Plug, path: "/admin/api-integration", color: "text-lime-500", permission: "user_management" },
 ];
 
 const LOW_STOCK_THRESHOLD = 10;
