@@ -28,6 +28,7 @@ import Cashbox from "./pages/admin/Cashbox";
 import Appearance from "./pages/admin/Appearance";
 import Offices from "./pages/admin/Offices";
 import BarcodeScanner from "./pages/admin/BarcodeScanner";
+import ApiIntegration from "./pages/admin/ApiIntegration";
 import BottomNav from "./components/BottomNav";
 import TopNav from "./components/TopNav";
 import NotFound from "./pages/NotFound";
@@ -71,6 +72,7 @@ const App = () => (
                 <Route path="/admin/appearance" element={<AdminRoute><Appearance /></AdminRoute>} />
                 <Route path="/admin/offices" element={<AdminRoute><Offices /></AdminRoute>} />
                 <Route path="/admin/barcode-scanner" element={<AdminRoute><BarcodeScanner /></AdminRoute>} />
+                <Route path="/admin/api-integration" element={<AdminRoute><ApiIntegration /></AdminRoute>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
