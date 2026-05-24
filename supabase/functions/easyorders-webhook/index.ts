@@ -78,8 +78,15 @@ Deno.serve(async (req) => {
     const address = s(body.address) || "";
     const govName = s(body.government) || s(body.governorate) || "";
     const shipping = n(body.shipping_cost);
-    // EasyOrders sends `cost` already including shipping. Do NOT add shipping again.
-    const totalAmount = n(body.total_cost) || n(body.cost);
+    const items = Array.isArray(body.cart_items) ? body.cart_items : [];
+    const itemsSubtotal = items.reduce((sum: number, it: any) => {
+      const quantity = n(it?.quantity) || 1;
+      return sum + (n(it?.price) * quantity);
+    }, 0);
+    // The app stores product total separately, then adds shipping in the UI.
+    // EasyOrders `total_cost`/`cost` include shipping, so subtract it when item prices are missing.
+    const easyOrdersTotal = n(body.total_cost) || n(body.cost);
+    const totalAmount = itemsSubtotal || Math.max(easyOrdersTotal - shipping, 0);
 
     // Customer upsert by phone
     let customerId: string | null = null;
@@ -104,7 +111,6 @@ Deno.serve(async (req) => {
       governorateId = gov?.id || null;
     }
 
-    const items = Array.isArray(body.cart_items) ? body.cart_items : [];
     const itemsText = items.map((it: any) => {
       const pname = it?.product?.name || "منتج";
       const color = it?.variant?.variation_props?.find((p: any) => p.variation === "color")?.variation_prop || "";

@@ -89,7 +89,15 @@ Deno.serve(async (req) => {
       const govName = pickString(o, ["governorate", "city", "shipping.city", "shipping.governorate"]) || "";
       const notes = pickString(o, ["notes", "note", "comments"]) || "";
       const shipping = pickNumber(o, ["shipping_cost", "shipping", "shipping_fees", "delivery_cost"]);
-      const totalAmount = pickNumber(o, ["total", "total_amount", "grand_total", "amount"]);
+      const rawItems: any[] = o.items || o.products || o.line_items || [];
+      const itemsSubtotal = Array.isArray(rawItems)
+        ? rawItems.reduce((sum: number, it: any) => {
+          const quantity = pickNumber(it, ["quantity", "qty"]) || 1;
+          return sum + (pickNumber(it, ["price", "unit_price"]) * quantity);
+        }, 0)
+        : 0;
+      const easyOrdersTotal = pickNumber(o, ["total", "total_amount", "grand_total", "amount"]);
+      const totalAmount = itemsSubtotal || Math.max(easyOrdersTotal - shipping, 0);
 
       // upsert customer by phone
       let customerId: string | null = null;
@@ -133,7 +141,7 @@ Deno.serve(async (req) => {
 
       if (orderErr || !newOrder) { skipped++; continue; }
 
-      const items: any[] = o.items || o.products || o.line_items || [];
+      const items: any[] = rawItems;
       if (Array.isArray(items) && items.length > 0) {
         const rows = items.map((it: any) => ({
           order_id: newOrder.id,
