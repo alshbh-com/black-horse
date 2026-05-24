@@ -240,6 +240,7 @@ export type Database = {
           last_sync_status: string | null
           provider: string
           updated_at: string
+          webhook_secret: string | null
         }
         Insert: {
           api_key?: string | null
@@ -253,6 +254,7 @@ export type Database = {
           last_sync_status?: string | null
           provider: string
           updated_at?: string
+          webhook_secret?: string | null
         }
         Update: {
           api_key?: string | null
@@ -266,6 +268,7 @@ export type Database = {
           last_sync_status?: string | null
           provider?: string
           updated_at?: string
+          webhook_secret?: string | null
         }
         Relationships: []
       }
