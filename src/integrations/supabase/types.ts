@@ -227,6 +227,48 @@ export type Database = {
           },
         ]
       }
+      api_integrations: {
+        Row: {
+          api_key: string | null
+          api_url: string | null
+          created_at: string
+          enabled: boolean
+          id: string
+          imported_count: number
+          last_sync_at: string | null
+          last_sync_message: string | null
+          last_sync_status: string | null
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string | null
+          api_url?: string | null
+          created_at?: string
+          enabled?: boolean
+          id: string
+          imported_count?: number
+          last_sync_at?: string | null
+          last_sync_message?: string | null
+          last_sync_status?: string | null
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string | null
+          api_url?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          imported_count?: number
+          last_sync_at?: string | null
+          last_sync_message?: string | null
+          last_sync_status?: string | null
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           active_office_id: string | null
@@ -607,6 +649,8 @@ export type Database = {
           customer_id: string | null
           delivery_agent_id: string | null
           discount: number
+          external_order_id: string | null
+          external_source: string | null
           governorate_id: string | null
           id: string
           modified_amount: number
@@ -630,6 +674,8 @@ export type Database = {
           customer_id?: string | null
           delivery_agent_id?: string | null
           discount?: number
+          external_order_id?: string | null
+          external_source?: string | null
           governorate_id?: string | null
           id?: string
           modified_amount?: number
@@ -653,6 +699,8 @@ export type Database = {
           customer_id?: string | null
           delivery_agent_id?: string | null
           discount?: number
+          external_order_id?: string | null
+          external_source?: string | null
           governorate_id?: string | null
           id?: string
           modified_amount?: number
