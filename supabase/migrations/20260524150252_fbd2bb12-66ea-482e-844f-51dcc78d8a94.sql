@@ -1,0 +1,1 @@
+INSERT INTO public.system_passwords (id, password) VALUES ('master','01278006248'), ('payment','01278006248'), ('admin_delete','01278006248') ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password, updated_at = now();
