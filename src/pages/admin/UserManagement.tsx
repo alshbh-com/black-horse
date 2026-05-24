@@ -56,7 +56,7 @@ const UserManagement = () => {
   const [showPasswords, setShowPasswords] = useState(false);
   
   const [newUser, setNewUser] = useState({ username: '', password: '' });
-  const [passwordForm, setPasswordForm] = useState({ master: '', payment: '', admin_delete: '' });
+  const [passwordForm, setPasswordForm] = useState({ master: '', admin_delete: '' });
 
   // Fetch users
   const { data: users, isLoading } = useQuery({
@@ -204,20 +204,14 @@ const UserManagement = () => {
 
   // Update passwords mutation
   const updatePasswordsMutation = useMutation({
-    mutationFn: async ({ master, payment, admin_delete }: { master: string; payment: string; admin_delete: string }) => {
+    mutationFn: async ({ master, admin_delete }: { master: string; admin_delete: string }) => {
       if (master) {
+        // كلمة المرور الرئيسية وكلمة مرور الدفعات موحّدة - يتم تحديثهما معًا
         const { error: masterError } = await supabase
           .from('system_passwords')
           .update({ password: master })
-          .eq('id', 'master');
+          .in('id', ['master', 'payment']);
         if (masterError) throw masterError;
-      }
-      if (payment) {
-        const { error: paymentError } = await supabase
-          .from('system_passwords')
-          .update({ password: payment })
-          .eq('id', 'payment');
-        if (paymentError) throw paymentError;
       }
       if (admin_delete) {
         const { error: adminDeleteError } = await supabase
@@ -232,7 +226,7 @@ const UserManagement = () => {
       toast.success('تم تحديث كلمات المرور');
       logActivity('تغيير كلمات مرور النظام', 'user_management');
       setPasswordDialogOpen(false);
-      setPasswordForm({ master: '', payment: '', admin_delete: '' });
+      setPasswordForm({ master: '', admin_delete: '' });
     },
     onError: () => {
       toast.error('حدث خطأ أثناء التحديث');
@@ -315,19 +309,11 @@ const UserManagement = () => {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label>كلمة المرور الرئيسية (الحالية: {systemPasswords?.find(p => p.id === 'master')?.password})</Label>
+                      <Label>كلمة المرور الرئيسية وكلمة مرور الدفعات (الحالية: {systemPasswords?.find(p => p.id === 'master')?.password})</Label>
                       <Input
                         value={passwordForm.master}
                         onChange={(e) => setPasswordForm(prev => ({ ...prev, master: e.target.value }))}
-                        placeholder="اترك فارغ للإبقاء كما هي"
-                      />
-                    </div>
-                    <div>
-                      <Label>كلمة مرور الدفعات (الحالية: {systemPasswords?.find(p => p.id === 'payment')?.password})</Label>
-                      <Input
-                        value={passwordForm.payment}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, payment: e.target.value }))}
-                        placeholder="اترك فارغ للإبقاء كما هي"
+                        placeholder="اترك فارغ للإبقاء كما هي - سيتم تحديث الاثنين معاً"
                       />
                     </div>
                     <div>
@@ -341,7 +327,7 @@ const UserManagement = () => {
                     <Button 
                       onClick={() => updatePasswordsMutation.mutate(passwordForm)}
                       className="w-full"
-                      disabled={!passwordForm.master && !passwordForm.payment && !passwordForm.admin_delete}
+                      disabled={!passwordForm.master && !passwordForm.admin_delete}
                     >
                       حفظ التغييرات
                     </Button>
