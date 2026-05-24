@@ -1,1 +1,4 @@
 project_id = "vqntxjciztwkxcttgcsa"
+
+[functions.easyorders-webhook]
+verify_jwt = false
