@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, RefreshCw, Save, Plug, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Save, Plug, CheckCircle2, AlertCircle, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 
@@ -17,9 +17,11 @@ const ApiIntegration = () => {
   const qc = useQueryClient();
   const { logActivity } = useAdminAuth();
   const [apiKey, setApiKey] = useState("");
-  const [apiUrl, setApiUrl] = useState("");
+  const [webhookSecret, setWebhookSecret] = useState("");
   const [enabled, setEnabled] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+
+  const projectRef = (import.meta.env.VITE_SUPABASE_URL || "").match(/https?:\/\/([^.]+)/)?.[1] || "";
+  const webhookUrl = `https://${projectRef}.supabase.co/functions/v1/easyorders-webhook`;
 
   const { data: integ, isLoading } = useQuery({
     queryKey: ["api_integration_easyorders"],
@@ -36,7 +38,7 @@ const ApiIntegration = () => {
   useEffect(() => {
     if (integ) {
       setApiKey(integ.api_key || "");
-      setApiUrl(integ.api_url || "https://api.easy-orders.net/api/v1/external-app-orders");
+      setWebhookSecret((integ as any).webhook_secret || "");
       setEnabled(!!integ.enabled);
     }
   }, [integ]);
@@ -45,7 +47,7 @@ const ApiIntegration = () => {
     mutationFn: async () => {
       const { error } = await supabase
         .from("api_integrations")
-        .update({ api_key: apiKey, api_url: apiUrl, enabled, updated_at: new Date().toISOString() })
+        .update({ api_key: apiKey, webhook_secret: webhookSecret, enabled, updated_at: new Date().toISOString() } as any)
         .eq("id", "easyorders");
       if (error) throw error;
     },
@@ -57,24 +59,9 @@ const ApiIntegration = () => {
     onError: () => toast.error("فشل الحفظ"),
   });
 
-  const triggerSync = async () => {
-    setSyncing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("easyorders-sync");
-      if (error) throw error;
-      if (data?.ok) {
-        toast.success(`تم استيراد ${data.imported || 0} طلب جديد`);
-      } else if (data?.skipped) {
-        toast.warning("التكامل غير مفعّل أو المفتاح ناقص");
-      } else {
-        toast.error(data?.error || "فشلت المزامنة");
-      }
-      qc.invalidateQueries({ queryKey: ["api_integration_easyorders"] });
-    } catch (e: any) {
-      toast.error(e.message || "فشلت المزامنة");
-    } finally {
-      setSyncing(false);
-    }
+  const copyUrl = async () => {
+    await navigator.clipboard.writeText(webhookUrl);
+    toast.success("تم نسخ رابط الويبهوك");
   };
 
   if (isLoading) return <div className="p-8 text-center">جاري التحميل...</div>;
@@ -91,37 +78,56 @@ const ApiIntegration = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Plug className="h-5 w-5" /> تكامل EasyOrders API
+              <Plug className="h-5 w-5" /> تكامل EasyOrders (Webhook)
             </CardTitle>
             <CardDescription>
-              ربط متجر EasyOrders لجلب الطلبات تلقائياً كل دقيقتين وإضافتها في قسم الأوردرات كـ "قيد الانتظار"
+              EasyOrders ترسل كل طلب جديد فوراً عبر Webhook ويتم إضافته في قسم الأوردرات كـ "قيد الانتظار"
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
-                <p className="font-medium">تفعيل المزامنة التلقائية</p>
-                <p className="text-sm text-muted-foreground">يجب إدخال مفتاح API صحيح أولاً</p>
+                <p className="font-medium">تفعيل استقبال الطلبات</p>
+                <p className="text-sm text-muted-foreground">عند الإيقاف لن تُضاف الطلبات الجديدة</p>
               </div>
               <Switch checked={enabled} onCheckedChange={setEnabled} />
             </div>
 
+            <div className="space-y-2 rounded-lg border p-4 bg-primary/5">
+              <Label className="text-base font-bold">رابط الويبهوك (انسخه والصقه في EasyOrders)</Label>
+              <div className="flex gap-2">
+                <Input value={webhookUrl} readOnly dir="ltr" className="font-mono text-xs" />
+                <Button onClick={copyUrl} variant="outline" size="icon"><Copy className="h-4 w-4" /></Button>
+              </div>
+              <ol className="text-xs text-muted-foreground space-y-1 list-decimal pr-4 mt-2">
+                <li>ادخل لوحة EasyOrders ← Public API ← Webhooks</li>
+                <li>اضغط Create Webhook والصق الرابط بالأعلى</li>
+                <li>انسخ الـ secret الذي يظهر لك والصقه في الحقل أدناه (اختياري للتأمين)</li>
+              </ol>
+            </div>
+
             <div className="space-y-2">
-              <Label>مفتاح API (Api-Key)</Label>
+              <Label>مفتاح API (Api-Key) - اختياري</Label>
               <Input
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="الصق مفتاح API الخاص بـ EasyOrders هنا"
                 type="password"
               />
-              <p className="text-xs text-muted-foreground">
-                تجده في لوحة EasyOrders ← الإعدادات ← API / تكاملات خارجية
-              </p>
             </div>
 
             <div className="space-y-2">
-              <Label>رابط API</Label>
-              <Input value={apiUrl} onChange={(e) => setApiUrl(e.target.value)} dir="ltr" />
+              <Label>سر الويبهوك (Webhook Secret) - اختياري</Label>
+              <Input
+                value={webhookSecret}
+                onChange={(e) => setWebhookSecret(e.target.value)}
+                placeholder="الصق الـ secret الذي ظهر لك من EasyOrders"
+                dir="ltr"
+                type="password"
+              />
+              <p className="text-xs text-muted-foreground">
+                إذا تركته فاضي، الويبهوك يقبل أي طلب. الأفضل تحطه للتأمين.
+              </p>
             </div>
 
             <div className="flex gap-2">
@@ -129,18 +135,14 @@ const ApiIntegration = () => {
                 <Save className="ml-2 h-4 w-4" />
                 حفظ الإعدادات
               </Button>
-              <Button onClick={triggerSync} variant="outline" disabled={syncing || !apiKey}>
-                <RefreshCw className={`ml-2 h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
-                مزامنة الآن
-              </Button>
             </div>
 
             <div className="rounded-lg border p-4 space-y-2 bg-muted/30">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">حالة آخر مزامنة:</span>
+                <span className="text-sm font-medium">حالة آخر طلب مستلم:</span>
                 {status === "success" && (
                   <Badge className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30">
-                    <CheckCircle2 className="ml-1 h-3 w-3" /> ناجحة
+                    <CheckCircle2 className="ml-1 h-3 w-3" /> ناجح
                   </Badge>
                 )}
                 {status === "error" && (
@@ -152,7 +154,7 @@ const ApiIntegration = () => {
               </div>
               {integ?.last_sync_at && (
                 <p className="text-sm text-muted-foreground">
-                  آخر مزامنة: {new Date(integ.last_sync_at).toLocaleString("ar-EG")}
+                  آخر استلام: {new Date(integ.last_sync_at).toLocaleString("ar-EG")}
                 </p>
               )}
               {integ?.last_sync_message && (
