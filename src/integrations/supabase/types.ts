@@ -346,25 +346,31 @@ export type Database = {
       categories: {
         Row: {
           created_at: string
+          description: string | null
           display_order: number
           id: string
           image_url: string | null
+          is_active: boolean
           name: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          description?: string | null
           display_order?: number
           id?: string
           image_url?: string | null
+          is_active?: boolean
           name: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          description?: string | null
           display_order?: number
           id?: string
           image_url?: string | null
+          is_active?: boolean
           name?: string
           updated_at?: string
         }
@@ -411,8 +417,10 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          serial_number: string | null
           shipping_cost: number
           total_owed: number
+          total_paid: number
           updated_at: string
         }
         Insert: {
@@ -422,8 +430,10 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
+          serial_number?: string | null
           shipping_cost?: number
           total_owed?: number
+          total_paid?: number
           updated_at?: string
         }
         Update: {
@@ -433,8 +443,10 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          serial_number?: string | null
           shipping_cost?: number
           total_owed?: number
+          total_paid?: number
           updated_at?: string
         }
         Relationships: []
@@ -597,6 +609,7 @@ export type Database = {
           discount: number
           governorate_id: string | null
           id: string
+          modified_amount: number
           notes: string | null
           order_details: string | null
           order_number: number
@@ -619,6 +632,7 @@ export type Database = {
           discount?: number
           governorate_id?: string | null
           id?: string
+          modified_amount?: number
           notes?: string | null
           order_details?: string | null
           order_number?: number
@@ -641,6 +655,7 @@ export type Database = {
           discount?: number
           governorate_id?: string | null
           id?: string
+          modified_amount?: number
           notes?: string | null
           order_details?: string | null
           order_number?: number
@@ -743,52 +758,55 @@ export type Database = {
       products: {
         Row: {
           category_id: string | null
-          color_options: Json | null
+          color_options: string[] | null
           created_at: string
           description: string | null
           details: string | null
           id: string
           image_url: string | null
           is_active: boolean
+          is_offer: boolean
           name: string
           offer_price: number | null
           price: number
           quantity_pricing: Json | null
-          size_options: Json | null
+          size_options: string[] | null
           stock: number
           updated_at: string
         }
         Insert: {
           category_id?: string | null
-          color_options?: Json | null
+          color_options?: string[] | null
           created_at?: string
           description?: string | null
           details?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_offer?: boolean
           name: string
           offer_price?: number | null
           price?: number
           quantity_pricing?: Json | null
-          size_options?: Json | null
+          size_options?: string[] | null
           stock?: number
           updated_at?: string
         }
         Update: {
           category_id?: string | null
-          color_options?: Json | null
+          color_options?: string[] | null
           created_at?: string
           description?: string | null
           details?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_offer?: boolean
           name?: string
           offer_price?: number | null
           price?: number
           quantity_pricing?: Json | null
-          size_options?: Json | null
+          size_options?: string[] | null
           stock?: number
           updated_at?: string
         }
@@ -978,6 +996,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          last_reset: string | null
           metadata: Json | null
           snapshot_date: string
           total_orders: number
@@ -986,6 +1005,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          last_reset?: string | null
           metadata?: Json | null
           snapshot_date?: string
           total_orders?: number
@@ -994,6 +1014,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          last_reset?: string | null
           metadata?: Json | null
           snapshot_date?: string
           total_orders?: number
@@ -1055,6 +1076,7 @@ export type Database = {
     }
     Functions: {
       delete_old_activity_logs: { Args: never; Returns: undefined }
+      reset_order_sequence: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
