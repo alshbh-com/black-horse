@@ -78,7 +78,8 @@ Deno.serve(async (req) => {
     const address = s(body.address) || "";
     const govName = s(body.government) || s(body.governorate) || "";
     const shipping = n(body.shipping_cost);
-    const totalAmount = n(body.total_cost) || (n(body.cost) + shipping);
+    // EasyOrders sends `cost` already including shipping. Do NOT add shipping again.
+    const totalAmount = n(body.total_cost) || n(body.cost);
 
     // Customer upsert by phone
     let customerId: string | null = null;
